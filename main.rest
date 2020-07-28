@@ -1,6 +1,0 @@
-POST http://kek.certustec.ee/api/v1/6Lf4lMfstamb3Y9L76fv/telemetry
-content-type:application/json
-
-{
-    "test": 1
-}
