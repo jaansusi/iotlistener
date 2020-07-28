@@ -1,7 +1,4 @@
-sudo apt install python3-pip
-pip3 install mysql-connector-python paho-mqtt
-
-
-Replace values in config.py.template and rename it to config.py
-
-Run with *python3 main.py*
+1. `sudo apt install python3-pip`
+2. `pip3 install mysql-connector-python paho-mqtt`
+3. Replace values in config.py.template and rename it to config.py
+4. `python3 main.py`
