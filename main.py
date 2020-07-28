@@ -1,17 +1,9 @@
 import paho.mqtt.client as mqtt
-import logging
 import json
 
 import config as cfg
 import database as db
 
-#logging
-if (cfg.debug):
-    logging.basicConfig()
-    logging.getLogger().setLevel(logging.DEBUG)
-    requests_log = logging.getLogger("requests.packages.urllib3")
-    requests_log.setLevel(logging.DEBUG)
-    requests_log.propagate = True
 
 deviceQuery = db.query("SELECT topic, id FROM devices;", returnData = True)
 if (cfg.debug):
