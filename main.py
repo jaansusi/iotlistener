@@ -13,27 +13,34 @@ if (cfg.debug):
     requests_log.setLevel(logging.DEBUG)
     requests_log.propagate = True
 
+deviceQuery = db.query("SELECT topic, id FROM devices;", returnData = True)
+if (cfg.debug):
+    print("Devices returned by database:", deviceQuery)
+
+devices = dict()
+for topic, id in deviceQuery:
+    devices.setdefault(topic, id)
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    topics = list(map(lambda a : (a[0], 0), db.query("SELECT topic FROM devices;", returnData = True)))
+    topics = list(map(lambda a : (a, 0), devices))
     if (cfg.debug):
-        print("Subscribing to topics: ", topics)
+        print("Subscribing to topics:", topics)
     client.subscribe(topics)
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     data = json.loads(msg.payload.decode())
     if (cfg.debug):
-        print(data)
+        print("Retrieved message from topic", msg.topic, ":", data)
     sqlData = data["ENERGY"]
     sqlData["Time"] = data["Time"]
-    sqlData["Source"] = msg.topic
+    sqlData["DeviceId"] = devices[msg.topic]
     addTelemetry = ("INSERT INTO telemetry_powr2 "
-                "(source, time, today, period, power, voltage, current, factor, apparent_power, reactive_power, yesterday, total, total_start_time)"
-                "VALUES (%(Source)s, %(Time)s, %(Today)s, %(Period)s, %(Power)s, %(Voltage)s, %(Current)s, %(Factor)s, %(ApparentPower)s, %(ReactivePower)s, %(Yesterday)s, %(Total)s, %(TotalStartTime)s);")
+                "(device_id, time, today, period, power, voltage, current, factor, apparent_power, reactive_power, yesterday, total, total_start_time)"
+                "VALUES (%(DeviceId)s, %(Time)s, %(Today)s, %(Period)s, %(Power)s, %(Voltage)s, %(Current)s, %(Factor)s, %(ApparentPower)s, %(ReactivePower)s, %(Yesterday)s, %(Total)s, %(TotalStartTime)s);")
     db.query(addTelemetry, sqlData, False)
 
 client = mqtt.Client()
