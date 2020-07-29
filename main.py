@@ -1,11 +1,24 @@
 import paho.mqtt.client as mqtt
 import json
+import logging
+import os
+from datetime import datetime
 
 import yaml
 import database as db
 
 cfg = yaml.safe_load(open("config.yml"))
 
+if not os.path.exists('logs'):
+    os.makedirs('logs')
+logging.basicConfig(filename="logs/all.log", format="%(levelname)s:%(message)s", level=logging.DEBUG)
+logger = logging.getLogger('MainLogger')
+
+fh = logging.FileHandler('logs/{:%Y-%m-%d}.log'.format(datetime.now()))
+formatter = logging.Formatter('%(asctime)s | %(levelname)-8s | %(lineno)04d | %(message)s')
+fh.setFormatter(formatter)
+
+logger.addHandler(fh)
 deviceQuery = db.query("SELECT topic, id FROM devices;", returnData = True)
 if (cfg["debug"]):
     print("Devices returned by database:", deviceQuery)
@@ -26,6 +39,7 @@ def on_connect(client, userdata, flags, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     data = json.loads(msg.payload.decode())
+    logger.info(msg.topic + " - " + str(data))
     if (cfg["debug"]):
         print("Retrieved message from topic", msg.topic, ":", data)
     sqlData = data["ENERGY"]

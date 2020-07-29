@@ -6,6 +6,13 @@ import yaml
 cfg = yaml.safe_load(open("config.yml"))
 
 def query(queryString, data = None, returnData = False):
+    if(cfg["db"]["engine"] == "mysql"):
+        return mySqlQuery(queryString, data, returnData)
+    elif(cfg["db"]["engine"] == "sqlite"):
+        return sqLiteQuery(queryString, data = None, returnData = False)
+
+
+def mySqlQuery(queryString, data = None, returnData = False):
     results = None
     try:
         connection = mysql.connector.connect(host=cfg["db"]["host"],
@@ -29,3 +36,7 @@ def query(queryString, data = None, returnData = False):
             cursor.close()
             connection.close()
     return results
+
+def sqLiteQuery(queryString, data = None, returnData = False):
+    return None
+
