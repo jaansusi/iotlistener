@@ -1,15 +1,17 @@
 import mysql.connector
 from mysql.connector import Error
 
-import config as cfg
+import yaml
+
+cfg = yaml.safe_load(open("config.yml"))
 
 def query(queryString, data = None, returnData = False):
     results = None
     try:
-        connection = mysql.connector.connect(host=cfg.db["host"],
-                                            database=cfg.db["database"],
-                                            user=cfg.db["username"],
-                                            password=cfg.db["password"])
+        connection = mysql.connector.connect(host=cfg["db"]["host"],
+                                            database=cfg["db"]["database"],
+                                            user=cfg["db"]["username"],
+                                            password=cfg["db"]["password"])
         if connection.is_connected():
             cursor = connection.cursor()
             if (data == None):

@@ -1,12 +1,13 @@
 import paho.mqtt.client as mqtt
 import json
 
-import config as cfg
+import yaml
 import database as db
 
+cfg = yaml.safe_load(open("config.yml"))
 
 deviceQuery = db.query("SELECT topic, id FROM devices;", returnData = True)
-if (cfg.debug):
+if (cfg["debug"]):
     print("Devices returned by database:", deviceQuery)
 
 devices = dict()
@@ -18,14 +19,14 @@ def on_connect(client, userdata, flags, rc):
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
     topics = list(map(lambda a : (a, 0), devices))
-    if (cfg.debug):
+    if (cfg["debug"]):
         print("Subscribing to topics:", topics)
     client.subscribe(topics)
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     data = json.loads(msg.payload.decode())
-    if (cfg.debug):
+    if (cfg["debug"]):
         print("Retrieved message from topic", msg.topic, ":", data)
     sqlData = data["ENERGY"]
     sqlData["Time"] = data["Time"]
@@ -38,9 +39,9 @@ def on_message(client, userdata, msg):
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
-client.username_pw_set(cfg.mqtt["username"], password=cfg.mqtt["password"])
+client.username_pw_set(cfg["mqtt"]["username"], password=cfg["mqtt"]["password"])
 
-client.connect(cfg.mqtt["host"], 1883, 60)
+client.connect(cfg["mqtt"]["host"], 1883, 60)
 
 # Blocking call that processes network traffic, dispatches callbacks and
 # handles reconnecting.
