@@ -10,3 +10,5 @@ db:
     database: 
     username: 
     password: 
+    engine: mysql #mysql or sqlite
+    filename: db/default.db #only used for sqlite
