@@ -11,7 +11,8 @@ cfg = yaml.safe_load(open("config.yml"))
 
 if not os.path.exists('logs'):
     os.makedirs('logs')
-logging.basicConfig(filename="logs/all.log", format="%(levelname)s:%(message)s", level=logging.DEBUG)
+
+logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('MainLogger')
 
 fh = logging.FileHandler('logs/{:%Y-%m-%d}.log'.format(datetime.now()))
@@ -19,8 +20,10 @@ formatter = logging.Formatter('%(asctime)s | %(levelname)-8s | %(lineno)04d | %(
 fh.setFormatter(formatter)
 
 logger.addHandler(fh)
+logger.info("Starting script..")
+
 deviceQuery = db.query("SELECT topic, id FROM devices;", returnData = True)
-if (cfg["debug"]):
+if cfg["debug"]:
     print("Devices returned by database:", deviceQuery)
 
 devices = dict()
@@ -32,23 +35,22 @@ def on_connect(client, userdata, flags, rc):
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
     topics = list(map(lambda a : (a, 0), devices))
-    if (cfg["debug"]):
+    if cfg["debug"]:
         print("Subscribing to topics:", topics)
     client.subscribe(topics)
+    logger.info("Script running, listening to {} topic(s)".format(len(topics)))
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     data = json.loads(msg.payload.decode())
-    logger.info(msg.topic + " - " + str(data))
-    if (cfg["debug"]):
+    logger.info("Incoming message: " + msg.topic + " - " + str(data))
+    if cfg["debug"]:
         print("Retrieved message from topic", msg.topic, ":", data)
     sqlData = data["ENERGY"]
     sqlData["Time"] = data["Time"]
     sqlData["DeviceId"] = devices[msg.topic]
-    addTelemetry = ("INSERT INTO telemetry_powr2 "
-                "(device_id, time, today, period, power, voltage, current, factor, apparent_power, reactive_power, yesterday, total, total_start_time)"
-                "VALUES (%(DeviceId)s, %(Time)s, %(Today)s, %(Period)s, %(Power)s, %(Voltage)s, %(Current)s, %(Factor)s, %(ApparentPower)s, %(ReactivePower)s, %(Yesterday)s, %(Total)s, %(TotalStartTime)s);")
-    db.query(addTelemetry, sqlData, False)
+    
+    db.insertTelemetry(sqlData)
 
 client = mqtt.Client()
 client.on_connect = on_connect
