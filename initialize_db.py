@@ -12,9 +12,12 @@ if cfg["db"]["engine"] == "mysql":
                                             password=cfg["db"]["password"])
         if connection.is_connected():
             cursor = connection.cursor()
-            cursor.executescript(open("db/init_mysql.sql", "r", encoding="utf-8").read())
+            sql = open("db/init_mysql.sql", "r", encoding="utf-8").read()
+            for query in sql.split(';'):
+                cursor.execute(query)
+            
             connection.commit()
-    except Error as e:
+    except mysql.connector.Error as e:
         print("Error while connecting to MySQL", e)
     finally:
         if connection.is_connected():

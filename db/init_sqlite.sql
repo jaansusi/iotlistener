@@ -23,4 +23,4 @@ CREATE TABLE IF NOT EXISTS telemetry_powr2 (
 );
 
 DELETE FROM devices;
-INSERT INTO devices (id, name, type, topic) VALUES (1, "test_powr2", "POWR_2", "tele/tasmota_6879C1/SENSOR")
+INSERT INTO devices (id, name, type, topic) VALUES (1, "test_powr2", "POWR_2", "tele/tasmota_6879C1/SENSOR");

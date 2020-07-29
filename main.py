@@ -5,9 +5,15 @@ import os
 from datetime import datetime
 
 import yaml
-import database as db
 
 cfg = yaml.safe_load(open("config.yml"))
+
+if cfg["db"]["engine"] == "mysql":
+    import db_mysql as db
+elif cfg["db"]["engine"] == "sqlite":
+    import db_sqlite as db
+else:
+    raise Exception("DB engine not supported")
 
 if not os.path.exists('logs'):
     os.makedirs('logs')
