@@ -6,8 +6,8 @@ cfg = yaml.safe_load(open("config.yml"))
 
 def insertTelemetry(data):
     queryString = ("INSERT INTO telemetry_powr2 "
-            "(device_id, time, today, period, power, voltage, current, factor, apparent_power, reactive_power, yesterday, total, total_start_time) "
-            "VALUES (%(DeviceId)s, %(Time)s, %(Today)s, %(Period)s, %(Power)s, %(Voltage)s, %(Current)s, %(Factor)s, %(ApparentPower)s, %(ReactivePower)s, %(Yesterday)s, %(Total)s, %(TotalStartTime)s);")
+            "(topic, time, today, period, power, voltage, current, factor, apparent_power, reactive_power, yesterday, total, total_start_time) "
+            "VALUES (%(Topic)s, %(Time)s, %(Today)s, %(Period)s, %(Power)s, %(Voltage)s, %(Current)s, %(Factor)s, %(ApparentPower)s, %(ReactivePower)s, %(Yesterday)s, %(Total)s, %(TotalStartTime)s);")
     query(queryString, data)
     
 def query(queryString, data = None, returnData = False):

@@ -6,9 +6,9 @@ cfg = yaml.safe_load(open("config.yml"))
 
 def insertTelemetry(data):
     queryString = ("INSERT INTO telemetry_powr2 "
-            "(device_id, time, today, period, power, voltage, current, factor, apparent_power, reactive_power, yesterday, total, total_start_time) "
+            "(topic, time, today, period, power, voltage, current, factor, apparent_power, reactive_power, yesterday, total, total_start_time) "
             "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);")
-    dataTuple = (data["DeviceId"], data["Time"], data["Today"], data["Period"], data["Power"], data["Voltage"], data["Current"], data["Factor"], data["ApparentPower"], data["ReactivePower"], data["Yesterday"], data["Total"], data["TotalStartTime"])
+    dataTuple = (data["Topic"], data["Time"], data["Today"], data["Period"], data["Power"], data["Voltage"], data["Current"], data["Factor"], data["ApparentPower"], data["ReactivePower"], data["Yesterday"], data["Total"], data["TotalStartTime"])
     sqLiteQuery(queryString, dataTuple)
 
 def query(queryString, data = None, returnData = False):
