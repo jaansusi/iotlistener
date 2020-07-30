@@ -1,5 +1,13 @@
 debug: False
 
+devices:
+    - device:
+        name: test_1
+        topic: tele/tasmota_XXXXXX/SENSOR
+    - device:
+        name: test_2
+        topic: tele/tasmota_YYYYYY/SENSOR
+
 mqtt:
     host: 
     username: 

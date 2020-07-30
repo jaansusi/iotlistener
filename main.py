@@ -28,19 +28,14 @@ fh.setFormatter(formatter)
 logger.addHandler(fh)
 logger.info("Starting script..")
 
-deviceQuery = db.query("SELECT topic, id FROM devices;", returnData = True)
 if cfg["debug"]:
-    print("Devices returned by database:", deviceQuery)
-
-devices = dict()
-for topic, id in deviceQuery:
-    devices.setdefault(topic, id)
+    print("Devices in config:", cfg["devices"])
 
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    topics = list(map(lambda a : (a, 0), devices))
+    topics = list(map(lambda a : (a["device"]["topic"], 0), cfg["devices"]))
     if cfg["debug"]:
         print("Subscribing to topics:", topics)
     client.subscribe(topics)
@@ -54,7 +49,7 @@ def on_message(client, userdata, msg):
         print("Retrieved message from topic", msg.topic, ":", data)
     sqlData = data["ENERGY"]
     sqlData["Time"] = data["Time"]
-    sqlData["DeviceId"] = devices[msg.topic]
+    sqlData["Topic"] = msg.topic
     
     db.insertTelemetry(sqlData)
 

@@ -13,8 +13,10 @@ if cfg["db"]["engine"] == "mysql":
         if connection.is_connected():
             cursor = connection.cursor()
             sql = open("db/init_mysql.sql", "r", encoding="utf-8").read()
+            print(sql.split(';'))
             for query in sql.split(';'):
-                cursor.execute(query)
+                if query.strip() != "":
+                    cursor.execute(query)
             
             connection.commit()
     except mysql.connector.Error as e:
