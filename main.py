@@ -3,6 +3,7 @@ import json
 import logging
 import os
 from datetime import datetime
+import pytz
 
 import yaml
 
@@ -18,7 +19,7 @@ else:
 if not os.path.exists('logs'):
     os.makedirs('logs')
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=cfg["loglevel"])
 logger = logging.getLogger('MainLogger')
 
 fh = logging.FileHandler('logs/{:%Y-%m-%d}.log'.format(datetime.now()))
@@ -48,14 +49,22 @@ def on_message(client, userdata, msg):
     if cfg["debug"]:
         print("Retrieved message from topic", msg.topic, ":", data)
     sqlData = data["ENERGY"]
-    sqlData["Time"] = data["Time"]
+    sqlData["Time"] = pytz.timezone(cfg["timezone"]).localize(datetime.strptime(data["Time"], "%Y-%m-%dT%H:%M:%S")).astimezone(pytz.timezone("UTC")).strftime("%Y-%m-%dT%H:%M:%S")
     sqlData["Topic"] = msg.topic
     
     db.insertTelemetry(sqlData)
 
+def on_log(mqttc, obj, level, string):
+    if (level == 8):
+        logger.critical(string)
+    else:
+        logger.debug(string)
+
+
 client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
+client.on_log = on_log
 client.username_pw_set(cfg["mqtt"]["username"], password=cfg["mqtt"]["password"])
 
 client.connect(cfg["mqtt"]["host"], 1883, 60)

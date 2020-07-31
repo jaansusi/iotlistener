@@ -1,4 +1,6 @@
 debug: False
+loglevel: 20 #CRITICAL=50;ERROR=40;WARNING=30;INFO=20;DEBUG=10
+
 
 devices:
     - device:
@@ -20,3 +22,5 @@ db:
     password: 
     engine: mysql #mysql or sqlite
     filename: db/default.db #only used for sqlite
+
+timezone: Europe/London
