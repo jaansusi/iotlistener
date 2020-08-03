@@ -1,3 +1,3 @@
 FROM python:3
 
-CMD ["python", "./main.py"]
+CMD ["python", "/usr/src/app/main.py"]
