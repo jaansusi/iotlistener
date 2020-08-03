@@ -4,7 +4,6 @@ import logging
 import os
 from datetime import datetime
 import pytz
-
 import yaml
 
 cfg = yaml.safe_load(open("config.yml"))
@@ -15,6 +14,12 @@ elif cfg["db"]["engine"] == "sqlite":
     import db_sqlite as db
 else:
     raise Exception("DB engine not supported")
+
+deviceTimeZones = dict(map(lambda x : (x["device"]["topic"], x["device"]["timezone"]), list(filter(lambda x : "timezone" in list(x["device"].keys()), cfg["devices"]))))
+#[{"topic": "timezone"}]
+#
+print(deviceTimeZones)
+
 
 if not os.path.exists('logs'):
     os.makedirs('logs')
@@ -36,7 +41,7 @@ if cfg["debug"]:
 def on_connect(client, userdata, flags, rc):
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    topics = list(map(lambda a : (a["device"]["topic"], 0), cfg["devices"]))
+    topics = list(map(lambda x : (x["device"]["topic"], 0), cfg["devices"]))
     if cfg["debug"]:
         print("Subscribing to topics:", topics)
     client.subscribe(topics)
@@ -44,15 +49,20 @@ def on_connect(client, userdata, flags, rc):
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
-    data = json.loads(msg.payload.decode())
-    logger.info("Incoming message: " + msg.topic + " - " + str(data))
-    if cfg["debug"]:
-        print("Retrieved message from topic", msg.topic, ":", data)
-    sqlData = data["ENERGY"]
-    sqlData["Time"] = pytz.timezone(cfg["timezone"]).localize(datetime.strptime(data["Time"], "%Y-%m-%dT%H:%M:%S")).astimezone(pytz.timezone("UTC")).strftime("%Y-%m-%dT%H:%M:%S")
-    sqlData["Topic"] = msg.topic
-    
-    db.insertTelemetry(sqlData)
+    # Let's log our exceptions ourselves, paho does not give out good ones
+    try:
+        data = json.loads(msg.payload.decode())
+        logger.info("Incoming message: " + msg.topic + " - " + str(data))
+        if cfg["debug"]:
+            print("Retrieved message from topic", msg.topic, ":", data)
+        sqlData = data["ENERGY"]
+        deviceTZ = deviceTimeZones[msg.topic] if msg.topic in list(deviceTimeZones.keys()) else cfg["timezone"] 
+        sqlData["Time"] = pytz.timezone(deviceTZ).localize(datetime.strptime(data["Time"], "%Y-%m-%dT%H:%M:%S")).astimezone(pytz.timezone("UTC")).strftime("%Y-%m-%dT%H:%M:%S")
+        sqlData["Topic"] = msg.topic
+        
+        db.insertTelemetry(sqlData)
+    except Exception as ex:
+        logger.exception(ex)
 
 def on_log(mqttc, obj, level, string):
     if (level == 8):

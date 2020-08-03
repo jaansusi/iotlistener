@@ -5,10 +5,13 @@ loglevel: 20 #CRITICAL=50;ERROR=40;WARNING=30;INFO=20;DEBUG=10
 devices:
     - device:
         name: test_1
+        company: company1
         topic: tele/tasmota_XXXXXX/SENSOR
     - device:
         name: test_2
+        company: company1
         topic: tele/tasmota_YYYYYY/SENSOR
+        timezone: Europe/Amsterdam
 
 mqtt:
     host: 
