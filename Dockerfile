@@ -1,3 +1,7 @@
 FROM python:3
 
-CMD ["python", "/usr/src/app/main.py"]
+WORKDIR /usr/src/app
+
+RUN pip install --no-cache-dir mysql-connector-python paho-mqtt pyyaml pytz
+
+CMD ["python", "./main.py"]
